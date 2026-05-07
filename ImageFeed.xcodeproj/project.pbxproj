@@ -88,8 +88,8 @@
 		28B0FFFC2F7BA52B00CB52CF = {
 			isa = PBXGroup;
 			children = (
-				28B000072F7BA52B00CB52CF /* ImageFeed */,
 				28B000062F7BA52B00CB52CF /* Products */,
+				28B000072F7BA52B00CB52CF /* ImageFeed */,
 			);
 			sourceTree = "<group>";
 		};

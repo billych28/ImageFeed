@@ -13,6 +13,7 @@ final class ImagesListViewController: UIViewController {
     private enum Constants {
         static let inset: CGFloat = 12
         static let defaultCellHeight: CGFloat = 200
+        static let showSingleImageSegueIdentifier = "ShowSingleImage"
     }
 
     // MARK: - IBOutlets
@@ -34,6 +35,15 @@ final class ImagesListViewController: UIViewController {
         setupTableView()
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        switch segue.identifier {
+        case Constants.showSingleImageSegueIdentifier:
+            handleSingleImageViewSegue(segue: segue, sender: sender)
+        default:
+            super.prepare(for: segue, sender: sender)
+        }
+    }
+    
     // MARK: - Private Methods
     private func setupTableView() {
         tableView.contentInset = UIEdgeInsets(
@@ -42,6 +52,19 @@ final class ImagesListViewController: UIViewController {
             bottom: Constants.inset,
             right: 0
         )
+    }
+    
+    private func handleSingleImageViewSegue(segue: UIStoryboardSegue, sender: Any?) {
+        guard
+            let viewController = segue.destination as? SingleImageViewController,
+            let indexPath = sender as? IndexPath
+        else {
+            assertionFailure("Invalid segue destination")
+            return
+        }
+        
+        let image = UIImage(named: photoNames[indexPath.row])
+        viewController.image = image
     }
     
     private func configCell(
@@ -87,14 +110,24 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
+        performSegue(withIdentifier: Constants.showSingleImageSegueIdentifier, sender: indexPath)
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         guard let image = UIImage(named: photoNames[indexPath.row]) else {
-            return Constants.defaultCellHeight
+            return 0
         }
-        let screenWidth = tableView.frame.width
-        let ratio = image.size.height / image.size.width
         
-        return screenWidth * ratio
+        let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
+        let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
+        let imageWidth = image.size.width
+        let scale = imageViewWidth / imageWidth
+        let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
+        return cellHeight
     }
     
 }
