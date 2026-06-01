@@ -11,7 +11,6 @@ final class SingleImageViewController: UIViewController {
     private enum Constants {
         static let minZoom = 0.1
         static let maxZoom = 1.25
-    
     }
     
     // MARK: - IBOutlets
