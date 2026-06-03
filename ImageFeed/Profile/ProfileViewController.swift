@@ -6,23 +6,23 @@
 //
 import UIKit
 
+// MARK: - Constants
+private enum Constants {
+    static let imageViewTopMargin: CGFloat = 32
+    static let leadingTrailingMargin: CGFloat = 16
+    static let margin8: CGFloat = 8
+    static let imageViewSize: CGFloat = 70
+    static let logoutButtonTrailingMargin: CGFloat = -20
+    static let fontSize23: CGFloat = 23
+    static let fontSize13: CGFloat = 13
+    static let profileImageName = "User avatar stub"
+    static let logoutButtonImageSystemName = "ipad.and.arrow.forward"
+    static let usernameLabelText = "Екатерина Новикова"
+    static let loginLabelText = "@ekaterina_now"
+    static let descriptionLabelText = "Hello, world!"
+}
+
 final class ProfileViewController: UIViewController {
-    // MARK: - Constants
-    private enum Constants {
-        static let imageViewTopMargin: CGFloat = 32
-        static let leadingTrailingMargin: CGFloat = 16
-        static let margin8: CGFloat = 8
-        static let imageViewSize: CGFloat = 70
-        static let logoutButtonTrailingMargin: CGFloat = -20
-        static let fontSize23: CGFloat = 23
-        static let fontSize13: CGFloat = 13
-        static let profileImageName = "User avatar stub"
-        static let logoutButtonImageSystemName = "ipad.and.arrow.forward"
-        static let usernameLabelText = "Екатерина Новикова"
-        static let loginLabelText = "@ekaterina_now"
-        static let descriptionLabelText = "Hello, world!"
-    }
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()

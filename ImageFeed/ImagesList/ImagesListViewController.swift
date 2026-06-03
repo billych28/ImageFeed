@@ -13,7 +13,6 @@ final class ImagesListViewController: UIViewController {
     private enum Constants {
         static let inset: CGFloat = 12
         static let defaultCellHeight: CGFloat = 200
-        static let showSingleImageSegueIdentifier = "ShowSingleImage"
     }
 
     // MARK: - IBOutlets
@@ -37,7 +36,7 @@ final class ImagesListViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-        case Constants.showSingleImageSegueIdentifier:
+        case GlobalConstants.showSingleImageSegueIdentifier:
             handleSingleImageViewSegue(segue: segue, sender: sender)
         default:
             super.prepare(for: segue, sender: sender)
@@ -54,7 +53,10 @@ final class ImagesListViewController: UIViewController {
         )
     }
     
-    private func handleSingleImageViewSegue(segue: UIStoryboardSegue, sender: Any?) {
+    private func handleSingleImageViewSegue(
+        segue: UIStoryboardSegue,
+        sender: Any?
+    ) {
         guard
             let viewController = segue.destination as? SingleImageViewController,
             let indexPath = sender as? IndexPath
@@ -114,7 +116,10 @@ extension ImagesListViewController: UITableViewDelegate {
         _ tableView: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
-        performSegue(withIdentifier: Constants.showSingleImageSegueIdentifier, sender: indexPath)
+        performSegue(
+            withIdentifier: GlobalConstants.showSingleImageSegueIdentifier,
+            sender: indexPath
+        )
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
