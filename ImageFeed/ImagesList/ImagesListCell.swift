@@ -5,6 +5,7 @@
 //  Created by Мамытов Руслан on 03.04.2026.
 //
 import UIKit
+import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
     // MARK: - Constants
@@ -42,6 +43,11 @@ final class ImagesListCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateGradientFrame()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
     }
     
     // MARK: - Private Methods

@@ -83,6 +83,7 @@ final class ProfileViewController: UIViewController {
         )
 
         let processor = RoundCornerImageProcessor(cornerRadius: Constants.imageViewSize / 2)
+
         avatarImageView.kf.indicatorType = .activity
         avatarImageView.kf.setImage(
             with: url,
@@ -100,7 +101,7 @@ final class ProfileViewController: UIViewController {
                 print("Картинка: \(value.image)")
                 print("Тип кэша: \(value.cacheType)")
                 print("Источник: \(value.source)")
-            case .failure(let error):
+            case .failure:
                 Logger.shared.log(method: "updateAvatar", error: "Error downloading user avatar")
             }
         }
@@ -166,7 +167,6 @@ final class ProfileViewController: UIViewController {
 
         view.addSubview(logoutButton)
 
-        
         logoutButton.trailingAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.trailingAnchor,

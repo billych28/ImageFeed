@@ -43,6 +43,7 @@ final class OAuth2Service {
         lastCode = code
         
         guard let urlRequest = makeOAuthTokenRequest(code: code) else {
+
             Logger.shared
                 .log(
                     method: "fetchAuthToken",
@@ -75,7 +76,6 @@ final class OAuth2Service {
                         method: "fetchAuthToken",
                         error: "\(String(describing: error.self))"
                     )
-                completion(.failure(error))
             }
             
             self.lastCode = nil
