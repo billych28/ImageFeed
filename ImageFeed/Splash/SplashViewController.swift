@@ -6,16 +6,20 @@
 //
 import UIKit
 
-final class SplashViewController: UIViewController {
-    // MARK: - Public properties
-    weak var delegate: AuthViewControllerDelegate?
+final class SplashViewController: UIViewController, ErrorHandler {
+    // MARK: - IBOutlets
+    private let splashImageView = UIImageView()
     
-    // MARK: - Private properties
-    private let storage = OAuth2Storage.shared
+    // MARK: - Public properties
+    let profileService = ProfileService.shared
+    let profileImageService = ProfileImageService.shared
+    let storage = OAuth2Storage.shared
+    weak var delegate: AuthViewControllerDelegate?
     
     // MARK: - Lifecycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        setupView()
         checkStorageTokenAndNavigate()
     }
     
@@ -37,14 +41,53 @@ final class SplashViewController: UIViewController {
     }
     
     // MARK: - Private methods
+    private func setupView() {
+        splashImageView.image = UIImage(named: "Practicum")
+        splashImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(splashImageView)
+        
+        NSLayoutConstraint.activate([
+            splashImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            splashImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+        ])
+    }
+    
     private func checkStorageTokenAndNavigate() {
-        if storage.token != nil {
-            switchToTabBarController()
+        if let token = storage.token {
+            fetchProfile(token: token)
         } else {
-            performSegue(
-                withIdentifier: GlobalConstants.showAuthenticationSegueIdentifier,
-                sender: nil
-            )
+            createAuthVCAndPresent()
         }
+    }
+    
+    private func fetchProfile(token: String) {
+        UIBlockingProgressHUD.show()
+        
+        profileService.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            
+            switch result {
+            case .success(let profile):
+                profileImageService.fetchProfileImageURL(username: profile.username) { _ in }
+                self.switchToTabBarController()
+            case .failure(let error):
+                handleError(controller: self, error: error)
+            }
+        }
+    }
+    
+    private func createAuthVCAndPresent() {
+        let storyboard = UIStoryboard(name: "Main", bundle: .main)
+        guard let authViewController = storyboard.instantiateViewController(withIdentifier: "AuthViewController") as? AuthViewController else {
+            assertionFailure("Не удалось найти AuthViewController по идентификатору")
+            return
+        }
+        authViewController.delegate = self
+        authViewController.modalPresentationStyle = .fullScreen
+        
+        present(authViewController, animated: true)
     }
 }

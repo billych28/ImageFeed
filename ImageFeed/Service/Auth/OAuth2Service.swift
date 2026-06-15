@@ -8,30 +8,57 @@ import Foundation
 
 final class OAuth2Service {
     static let shared = OAuth2Service()
-    private init() {}
     
+    // MARK: - Private properties
+    private let decoder = JSONDecoder()
+    private var lastCode: String?
+    private var task: URLSessionTask?
+    
+    // MARK: - Init
+    private init() {
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+    }
+    
+    // MARK: - Public methods
     func fetchAuthToken(
         code: String,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
+        assert(Thread.isMainThread)
+        guard lastCode != code else {
+            completion(.failure(NetworkError.invalidRequest))
+            return
+        }
+        
+        task?.cancel()
+        lastCode = code
+        
         guard let urlRequest = makeOAuthTokenRequest(code: code) else {
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = URLSession.shared.data(
+        let task = URLSession.shared.objectTask(
             for: urlRequest,
-            completion: { [weak self] result in
-                guard let self else { return }
-                
-                switch result {
-                case .success(let data):
-                    completion(decodeToken(from: data))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-            })
+            decoder: decoder
+        ) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
+            guard let self else {
+                completion(.failure(NetworkError.urlSessionError))
+                return
+            }
+            
+            switch result {
+            case .success(let response):
+                completion(.success(response.accessToken))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+            
+            self.lastCode = nil
+            self.task = nil
+        }
         
+        self.task = task
         task.resume()
     }
     
@@ -62,17 +89,5 @@ final class OAuth2Service {
         var request = URLRequest(url: authTokenUrl)
         request.httpMethod = "POST"
         return request
-    }
-    
-    private func decodeToken(from data: Data) -> Result<String, Error> {
-        do {
-            let oAuthTokenResponseBody = try JSONDecoder().decode(
-                OAuthTokenResponseBody.self,
-                from: data
-            )
-            return .success(oAuthTokenResponseBody.accessToken)
-        } catch {
-            return .failure(NetworkError.decodingError(error))
-        }
     }
 }
