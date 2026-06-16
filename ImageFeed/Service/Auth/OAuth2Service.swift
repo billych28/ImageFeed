@@ -6,6 +6,10 @@
 //
 import Foundation
 
+enum AuthError: Error {
+    case authError
+}
+
 final class OAuth2Service {
     static let shared = OAuth2Service()
     
@@ -26,7 +30,12 @@ final class OAuth2Service {
     ) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
-            completion(.failure(NetworkError.invalidRequest))
+            Logger.shared
+                .log(
+                    method: "fetchAuthToken",
+                    error: "Running the same request again"
+                )
+            completion(.failure(AuthError.authError))
             return
         }
         
@@ -34,7 +43,12 @@ final class OAuth2Service {
         lastCode = code
         
         guard let urlRequest = makeOAuthTokenRequest(code: code) else {
-            completion(.failure(NetworkError.invalidRequest))
+            Logger.shared
+                .log(
+                    method: "fetchAuthToken",
+                    error: "urlRequest is nil"
+                )
+            completion(.failure(AuthError.authError))
             return
         }
         
@@ -43,7 +57,12 @@ final class OAuth2Service {
             decoder: decoder
         ) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
             guard let self else {
-                completion(.failure(NetworkError.urlSessionError))
+                Logger.shared
+                    .log(
+                        method: "fetchAuthToken",
+                        error: "AuthError.authError"
+                    )
+                completion(.failure(AuthError.authError))
                 return
             }
             
@@ -51,6 +70,11 @@ final class OAuth2Service {
             case .success(let response):
                 completion(.success(response.accessToken))
             case .failure(let error):
+                Logger.shared
+                    .log(
+                        method: "fetchAuthToken",
+                        error: "\(String(describing: error.self))"
+                    )
                 completion(.failure(error))
             }
             
@@ -64,7 +88,11 @@ final class OAuth2Service {
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token") else {
-            print("Failed to create URLComponents for OAuth token request")
+            Logger.shared.log(
+                method: "makeOAuthTokenRequest",
+                error: "Failed to create URLComponents for OAuth token request",
+                parameter: code
+            )
             return nil
         }
         

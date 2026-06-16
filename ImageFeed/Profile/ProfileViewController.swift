@@ -82,7 +82,7 @@ final class ProfileViewController: UIViewController {
             systemName: Constants.placeholderImageName
         )
 
-        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        let processor = RoundCornerImageProcessor(cornerRadius: Constants.imageViewSize / 2)
         avatarImageView.kf.indicatorType = .activity
         avatarImageView.kf.setImage(
             with: url,
@@ -101,15 +101,15 @@ final class ProfileViewController: UIViewController {
                 print("Тип кэша: \(value.cacheType)")
                 print("Источник: \(value.source)")
             case .failure(let error):
-                print("Ошибка при загрузке аватарки профиля: \(error)")
+                Logger.shared.log(method: "updateAvatar", error: "Error downloading user avatar")
             }
         }
     }
 
     private func updateProfileDetails(profile: Profile) {
         usernameLabel.text =
-            profile.username.isEmpty
-            ? Constants.usernameLabelDefaultText : profile.username
+            profile.name.isEmpty
+            ? Constants.usernameLabelDefaultText : profile.name
         loginLabel.text =
             profile.loginName.isEmpty
             ? Constants.loginLabelDefaultText : profile.loginName
@@ -166,6 +166,7 @@ final class ProfileViewController: UIViewController {
 
         view.addSubview(logoutButton)
 
+        
         logoutButton.trailingAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.trailingAnchor,
@@ -176,9 +177,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func configureUsernameLabel() {
-        usernameLabel.font =
-            UIFont
-            .systemFont(ofSize: Constants.fontSize23, weight: .bold)
+        usernameLabel.font = UIFont.systemFont(ofSize: Constants.fontSize23, weight: .bold)
         usernameLabel.textColor = .ypWhite
         usernameLabel.text = Constants.usernameLabelDefaultText
 

@@ -27,6 +27,7 @@ final class ProfileService {
         completion: @escaping (Result<Profile, Error>) -> Void
     ) {
         guard lastToken != token else {
+            Logger.shared.log(method: "fetchProfile", error: "NetworkError.invalidRequest")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -35,6 +36,7 @@ final class ProfileService {
         lastToken = token
         
         guard let urlRequest = makeProfileRequest(token: token) else {
+            Logger.shared.log(method: "fetchProfile", error: "urlRequest is nil")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -45,6 +47,7 @@ final class ProfileService {
         ) in
             
             guard let self else {
+                Logger.shared.log(method: "fetchProfile", error: "NetworkError.urlSessionError")
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -55,6 +58,7 @@ final class ProfileService {
                 self.profile = profile
                 completion(.success(profile))
             case .failure(let error):
+                Logger.shared.log(method: "fetchProfile", error: "\(String(describing: error.self))")
                 completion(.failure(error))
             }
             
@@ -70,7 +74,11 @@ final class ProfileService {
     private func makeProfileRequest(token: String) -> URLRequest? {
         let url = URL(string: GlobalConstants.baseApiURL + "me")
         guard let userProfileUrl = url else {
-            print("Failed to create URL for user's profile request")
+            Logger.shared.log(
+                method: "makeOAuthTokenRequest",
+                error: "Failed to create URL for user's profile request",
+                parameter: token
+            )
             return nil
         }
         

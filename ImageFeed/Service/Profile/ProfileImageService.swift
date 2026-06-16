@@ -38,6 +38,7 @@ final class ProfileImageService {
     ) {
         assert(Thread.isMainThread)
         guard lastUsername != username else {
+            Logger.shared.log(method: "fetchProfileImageURL", error: "NetworkError.invalidRequest")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -46,11 +47,13 @@ final class ProfileImageService {
         lastUsername = username
         
         guard let token = storage.token else {
-            completion(.failure(NSError(domain: "ProfileImageService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authorization token missing"])))
+            Logger.shared.log(method: "fetchProfileImageURL", error: "Authorization token missing")
+            completion(.failure(NetworkError.invalidRequest))
             return
         }
         
         guard let urlRequest = makeUserRequest(token: token, username: username) else {
+            Logger.shared.log(method: "fetchProfileImageURL", error: "urlRequest is nil")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -60,6 +63,7 @@ final class ProfileImageService {
             Error>
         ) in
             guard let self else {
+                Logger.shared.log(method: "fetchProfileImageURL", error: "NetworkError.urlSessionError")
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -70,6 +74,7 @@ final class ProfileImageService {
                 postImageURLNotification(url: user.profileImage.small)
                 completion(.success(user.profileImage.small))
             case .failure(let error):
+                Logger.shared.log(method: "fetchProfileImageURL", error: "\(String(describing: error.self))")
                 completion(.failure(error))
             }
             
@@ -84,7 +89,11 @@ final class ProfileImageService {
     private func makeUserRequest(token: String, username: String) -> URLRequest? {
         let url = URL(string: "\(GlobalConstants.baseApiURL)/users/\(username)")
         guard let publicProfileUrl = url else {
-            print("Failed to create URL for user's public profile request")
+            Logger.shared.log(
+                method: "makeUserRequest",
+                error: "Failed to create URL for user's public profile request",
+                parameter: username
+            )
             return nil
         }
         

@@ -5,22 +5,23 @@
 //  Created by Мамытов Руслан on 27.05.2026.
 //
 import UIKit
+import SwiftKeychainWrapper
 
 final class SplashViewController: UIViewController, ErrorHandler {
     // MARK: - IBOutlets
     private let splashImageView = UIImageView()
     
-    // MARK: - Public properties
-    let profileService = ProfileService.shared
-    let profileImageService = ProfileImageService.shared
-    let storage = OAuth2Storage.shared
-    weak var delegate: AuthViewControllerDelegate?
+    // MARK: - Private properties
+    private let profileService = ProfileService.shared
+    private let profileImageService = ProfileImageService.shared
+    private let storage = OAuth2Storage.shared
     
     // MARK: - Lifecycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupView()
         checkStorageTokenAndNavigate()
+        //KeychainWrapper.standard.removeObject(forKey: "token")
     }
     
     // MARK: - Public methods
@@ -87,7 +88,6 @@ final class SplashViewController: UIViewController, ErrorHandler {
         }
         authViewController.delegate = self
         authViewController.modalPresentationStyle = .fullScreen
-        
         present(authViewController, animated: true)
     }
 }

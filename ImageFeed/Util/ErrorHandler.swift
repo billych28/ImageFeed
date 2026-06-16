@@ -8,12 +8,13 @@ import UIKit
 
 // MARK: - Constants
 private enum Constants {
-    static let alertTitle = "Ошибка"
+    static let alertTitle = "Что-то пошло не так("
     static let alertButtonTitle = "Ок"
     static let invalidRequestErrorDescription = "Неверно сформированный запрос"
     static let unknownErrorDescription = "Произошла неизвестная ошибка"
     static let decodingErrorDescription = "Произошла ошибка при получении ответа с сервера"
     static let httpStatusCodeErrorDescription = "Сервер вернул ответ с ошибкой: "
+    static let authErrorDescription = "Не удалось войти в систему"
 }
 
 protocol ErrorHandler {
@@ -22,7 +23,7 @@ protocol ErrorHandler {
 
 extension ErrorHandler {
     func handleError(controller vc: UIViewController, error: any Error) {
-        let errorMessage = switch error {
+        let alertMessage = switch error {
         case NetworkError.invalidRequest:
             Constants.invalidRequestErrorDescription
         case NetworkError.urlSessionError:
@@ -31,12 +32,13 @@ extension ErrorHandler {
             Constants.decodingErrorDescription
         case NetworkError.httpStatusCode(let code):
             Constants.httpStatusCodeErrorDescription + String(code)
+        case AuthError.authError:
+            Constants.authErrorDescription
         default:
             Constants.unknownErrorDescription
         }
         
-        print(error.localizedDescription)
-        showErrorAlert(controller: vc, message: errorMessage)
+        showErrorAlert(controller: vc, message: alertMessage)
     }
     
     private func showErrorAlert(
