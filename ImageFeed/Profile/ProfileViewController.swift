@@ -5,9 +5,11 @@
 //  Created by Мамытов Руслан on 08.04.2026.
 //
 import UIKit
+import Kingfisher
 
 // MARK: - Constants
 private enum Constants {
+    static let backgroundColor = "YP Black"
     static let imageViewTopMargin: CGFloat = 32
     static let leadingTrailingMargin: CGFloat = 16
     static let margin8: CGFloat = 8
@@ -15,59 +17,155 @@ private enum Constants {
     static let logoutButtonTrailingMargin: CGFloat = -20
     static let fontSize23: CGFloat = 23
     static let fontSize13: CGFloat = 13
-    static let profileImageName = "User avatar stub"
+    static let placeholderImageName = "person.circle.fill"
     static let logoutButtonImageSystemName = "ipad.and.arrow.forward"
-    static let usernameLabelText = "Екатерина Новикова"
-    static let loginLabelText = "@ekaterina_now"
-    static let descriptionLabelText = "Hello, world!"
+    static let loginLabelDefaultText = "@неизвестный"
+    static let usernameLabelDefaultText = "Имя не указано"
+    static let descriptionLabelDefaultText = "Описание отсутствует"
 }
 
 final class ProfileViewController: UIViewController {
+    // MARK: - IBOutlets
+    private let avatarImageView = UIImageView()
+    private let logoutButton = UIButton(type: .system)
+    private let usernameLabel = UILabel()
+    private let loginLabel = UILabel()
+    private let descriptionLabel = UILabel()
+
+    // MARK: - Private properties
+    private var profileImageServiceObserver: NSObjectProtocol?
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let imageView = configureImageView()
-        let usernameLabel = configureUsernameLabel(imageView: imageView)
-        let loginLabel = configureLoginLabel(usernameLabel: usernameLabel)
-        configureDescriptionLabel(loginLabel: loginLabel)
-        configureLogoutButton(imageView: imageView)
+        setupViews()
+        updateProfile()
+        setupImageServiceObserver()
+        updateAvatar()
+    }
+
+    // MARK: - Private methods
+    private func setupViews() {
+        view.backgroundColor = UIColor(named: Constants.backgroundColor)
+        configureImageView()
+        configureLogoutButton()
+        configureUsernameLabel()
+        configureLoginLabel()
+        configureDescriptionLabel()
     }
     
-    // MARK: - Private methods
-    private func configureImageView() -> UIView {
-        let profileImage = UIImage(named: Constants.profileImageName)
-        let imageView = UIImageView(image: profileImage)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(imageView)
-        
-        imageView.leadingAnchor
+    private func updateProfile() {
+        if let profile = ProfileService.shared.profile {
+            updateProfileDetails(profile: profile)
+        }
+    }
+
+    private func setupImageServiceObserver() {
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageServiceConstants.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.updateAvatar()
+            }
+    }
+
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+
+        let placeholderImage = UIImage(
+            systemName: Constants.placeholderImageName
+        )
+
+        let processor = RoundCornerImageProcessor(cornerRadius: Constants.imageViewSize / 2)
+        avatarImageView.kf.indicatorType = .activity
+        avatarImageView.kf.setImage(
+            with: url,
+            placeholder: placeholderImage,
+            options: [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .cacheOriginalImage,
+                .forceRefresh,
+            ]
+        ) { result in
+
+            switch result {
+            case .success(let value):
+                print("Картинка: \(value.image)")
+                print("Тип кэша: \(value.cacheType)")
+                print("Источник: \(value.source)")
+            case .failure(let error):
+                Logger.shared.log(method: "updateAvatar", error: "Error downloading user avatar")
+            }
+        }
+    }
+
+    private func updateProfileDetails(profile: Profile) {
+        usernameLabel.text =
+            profile.name.isEmpty
+            ? Constants.usernameLabelDefaultText : profile.name
+        loginLabel.text =
+            profile.loginName.isEmpty
+            ? Constants.loginLabelDefaultText : profile.loginName
+        descriptionLabel.text =
+            (profile.bio?.isEmpty ?? true)
+            ? Constants.descriptionLabelDefaultText : profile.bio
+    }
+
+    private func configureImageView() {
+        let profileImage = UIImage(systemName: "person.circle.fill")?
+            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
+            .withConfiguration(
+                UIImage.SymbolConfiguration(
+                    pointSize: 70,
+                    weight: .regular,
+                    scale: .large
+                )
+            )
+        avatarImageView.image = profileImage
+        avatarImageView.contentMode = .scaleAspectFit
+        avatarImageView.clipsToBounds = true
+        avatarImageView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(avatarImageView)
+
+        avatarImageView.leadingAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: Constants.leadingTrailingMargin
             ).isActive = true
-        imageView.topAnchor
+        avatarImageView.topAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.topAnchor,
                 constant: Constants.imageViewTopMargin
             ).isActive = true
-        imageView.widthAnchor.constraint(equalToConstant: Constants.imageViewSize).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: Constants.imageViewSize).isActive = true
-        
-        return imageView
+        avatarImageView.widthAnchor
+            .constraint(
+                equalToConstant: Constants.imageViewSize
+            ).isActive = true
+        avatarImageView.heightAnchor
+            .constraint(
+                equalToConstant: Constants.imageViewSize
+            ).isActive = true
     }
-    
-    private func configureLogoutButton(imageView: UIView) {
-        let logoutButton = UIButton.systemButton(
-            with: UIImage(systemName: Constants.logoutButtonImageSystemName) ?? UIImage(),
-            target: self,
-            action: nil
-        )
+
+    private func configureLogoutButton() {
+        let logoutButtonImage =
+            UIImage(systemName: Constants.logoutButtonImageSystemName)
+            ?? UIImage()
+
+        logoutButton.setImage(logoutButtonImage, for: .normal)
         logoutButton.tintColor = .ypRed
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
-        
+
         view.addSubview(logoutButton)
+
         
         logoutButton.trailingAnchor
             .constraint(
@@ -75,66 +173,62 @@ final class ProfileViewController: UIViewController {
                 constant: Constants.logoutButtonTrailingMargin
             ).isActive = true
         logoutButton.centerYAnchor
-            .constraint(equalTo: imageView.centerYAnchor).isActive = true
+            .constraint(equalTo: avatarImageView.centerYAnchor).isActive = true
     }
-    
-    private func configureUsernameLabel(imageView: UIView) -> UIView {
-        let usernameLabel = UILabel()
+
+    private func configureUsernameLabel() {
         usernameLabel.font = UIFont.systemFont(ofSize: Constants.fontSize23, weight: .bold)
         usernameLabel.textColor = .ypWhite
-        usernameLabel.text = Constants.usernameLabelText
-        
+        usernameLabel.text = Constants.usernameLabelDefaultText
+
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         view.addSubview(usernameLabel)
         usernameLabel.leadingAnchor
             .constraint(
-                equalTo: imageView.leadingAnchor
+                equalTo: avatarImageView.leadingAnchor
             ).isActive = true
         usernameLabel.topAnchor
             .constraint(
-                equalTo: imageView.bottomAnchor,
+                equalTo: avatarImageView.bottomAnchor,
                 constant: Constants.margin8
             ).isActive = true
-        
-        return usernameLabel
     }
-    
-    private func configureLoginLabel(usernameLabel: UIView) -> UIView {
-        let loginLabel = UILabel()
+
+    private func configureLoginLabel() {
         loginLabel.font = UIFont.systemFont(ofSize: Constants.fontSize13)
         loginLabel.textColor = .ypGray
-        loginLabel.text = Constants.loginLabelText
-        
+        loginLabel.text = Constants.loginLabelDefaultText
+
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         view.addSubview(loginLabel)
-        loginLabel.leadingAnchor.constraint(equalTo: usernameLabel.leadingAnchor).isActive = true
+        loginLabel.leadingAnchor
+            .constraint(equalTo: avatarImageView.leadingAnchor).isActive = true
         loginLabel.topAnchor
             .constraint(
                 equalTo: usernameLabel.bottomAnchor,
                 constant: Constants.margin8
             ).isActive = true
-        
-        return loginLabel
     }
-    
-    private func configureDescriptionLabel(loginLabel: UIView) {
+
+    private func configureDescriptionLabel() {
         let descriptionLabel = UILabel()
         descriptionLabel.font = UIFont.systemFont(ofSize: Constants.fontSize13)
         descriptionLabel.textColor = .ypWhite
-        descriptionLabel.text = Constants.descriptionLabelText
-        
+        descriptionLabel.text = Constants.descriptionLabelDefaultText
+
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+
         view.addSubview(descriptionLabel)
-        
-        descriptionLabel.leadingAnchor.constraint(equalTo: loginLabel.leadingAnchor).isActive = true
+
+        descriptionLabel.leadingAnchor
+            .constraint(equalTo: avatarImageView.leadingAnchor).isActive = true
         descriptionLabel.topAnchor
             .constraint(
                 equalTo: loginLabel.bottomAnchor,
                 constant: Constants.margin8
             ).isActive = true
     }
-    
+
 }

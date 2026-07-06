@@ -13,8 +13,9 @@ enum GlobalConstants {
     static let redirectURI: String = "urn:ietf:wg:oauth:2.0:oob"
     static let accessScope: String = "public+read_user+write_likes"
     
+    static let baseApiURL = "https://api.unsplash.com/"
+    
     // MARK: - Segue Identifier
     static let showWebViewSegueIdentifier = "ShowWebView"
     static let showSingleImageSegueIdentifier = "ShowSingleImage"
-    static let showAuthenticationSegueIdentifier = "ShowAuthentication"
 }

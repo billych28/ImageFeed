@@ -21,29 +21,16 @@ final class WebViewController: UIViewController {
     // MARK: - Public properties
     weak var delegate: WebViewControllerDelegate?
     
+    // MARK: - Private properties
+    private var estimatedProgressObservation: NSKeyValueObservation?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         webView.navigationDelegate = self
+        setEstimatedProgressObserver()
         loadAuthView()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        webView.addObserver(
-            self,
-            forKeyPath: #keyPath(WKWebView.estimatedProgress),
-            options: .new,
-            context: nil
-        )
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        webView.removeObserver(
-            self,
-            forKeyPath: #keyPath(WKWebView.estimatedProgress)
-        )
     }
     
     // MARK: - Public methods
@@ -66,6 +53,16 @@ final class WebViewController: UIViewController {
     }
     
     // MARK: - Private methods
+    private func setEstimatedProgressObserver() {
+        estimatedProgressObservation = webView.observe(
+            \.estimatedProgress,
+             options: []
+        ) { [weak self] _, _ in
+            guard let self else { return }
+            self.updateProgress()
+        }
+    }
+    
     private func loadAuthView() {
         guard var urlComponents = URLComponents(string: Constants.unsplashAuthorizeURLString) else {
             return
