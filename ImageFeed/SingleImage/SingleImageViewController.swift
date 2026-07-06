@@ -5,8 +5,9 @@
 //  Created by Мамытов Руслан on 09.04.2026.
 //
 import UIKit
+import Kingfisher
 
-final class SingleImageViewController: UIViewController {
+final class SingleImageViewController: UIViewController, ErrorHandler {
     // MARK: - Constants
     private enum Constants {
         static let minZoom = 0.1
@@ -18,13 +19,11 @@ final class SingleImageViewController: UIViewController {
     @IBOutlet private weak var imageView: UIImageView!
     
     // MARK: - Properties
-    var image: UIImage? {
+    var fullImageURL: String? {
         didSet {
-            guard isViewLoaded, let image else { return }
+            guard isViewLoaded, let fullImageURL else { return }
             
-            imageView.image = image
-            imageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
+            setImageView()
         }
     }
     
@@ -33,11 +32,8 @@ final class SingleImageViewController: UIViewController {
         super.viewDidLoad()
         scrollView.minimumZoomScale = Constants.minZoom
         scrollView.maximumZoomScale = Constants.maxZoom
-
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        scrollView.delegate = self
+        setImageView()
     }
     
     // MARK: - IBAction
@@ -46,16 +42,35 @@ final class SingleImageViewController: UIViewController {
     }
     
     @IBAction func didTapShareButton() {
-        guard let image else { return }
+        guard let fullImageURL else { return }
         let share = UIActivityViewController(
-            activityItems: [image],
+            activityItems: [imageView.image ?? UIImage()],
             applicationActivities: nil
         )
         present(share, animated: true, completion: nil)
     }
     
-    // MARK: - Private Methods
-    func rescaleAndCenterImageInScrollView(image: UIImage) {
+    // MARK: - Private methods
+    private func setImageView() {
+        guard
+            let fullImageURL,
+            let url = URL(string: fullImageURL)
+        else { return }
+        
+        UIBlockingProgressHUD.show()
+        imageView.kf.setImage(with: url) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            switch result {
+            case .success(let imageResult):
+                self.rescaleAndCenterImageInScrollView(image: imageResult.image)
+            case .failure(let error):
+                handleError(controller: self, error: error)
+            }
+        }
+    }
+    private func rescaleAndCenterImageInScrollView(image: UIImage) {
         let minZoomScale = scrollView.minimumZoomScale
         let maxZoomScale = scrollView.maximumZoomScale
         view.layoutIfNeeded()

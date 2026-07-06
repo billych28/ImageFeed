@@ -22,6 +22,8 @@ private enum Constants {
     static let loginLabelDefaultText = "@неизвестный"
     static let usernameLabelDefaultText = "Имя не указано"
     static let descriptionLabelDefaultText = "Описание отсутствует"
+    static let alertTitle = "Пока, пока!"
+    static let alertMessage = "Уверены, что хотите выйти?"
 }
 
 final class ProfileViewController: UIViewController {
@@ -33,6 +35,7 @@ final class ProfileViewController: UIViewController {
     private let descriptionLabel = UILabel()
 
     // MARK: - Private properties
+    private let logoutService = ProfileLogoutService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
 
     // MARK: - Lifecycle
@@ -120,7 +123,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func configureImageView() {
-        let profileImage = UIImage(systemName: "person.circle.fill")?
+        let profileImage = UIImage(systemName: Constants.placeholderImageName)?
             .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
             .withConfiguration(
                 UIImage.SymbolConfiguration(
@@ -160,9 +163,14 @@ final class ProfileViewController: UIViewController {
         let logoutButtonImage =
             UIImage(systemName: Constants.logoutButtonImageSystemName)
             ?? UIImage()
-
+        let logoutButtonAction = UIAction { [weak self] action in
+            guard let self else { return }
+            showLogoutAlert()
+        }
+        
         logoutButton.setImage(logoutButtonImage, for: .normal)
         logoutButton.tintColor = .ypRed
+        logoutButton.addAction(logoutButtonAction, for: .touchUpInside)
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(logoutButton)
@@ -229,6 +237,48 @@ final class ProfileViewController: UIViewController {
                 equalTo: loginLabel.bottomAnchor,
                 constant: Constants.margin8
             ).isActive = true
+    }
+    
+    private func showLogoutAlert() {
+        let alert = UIAlertController(
+            title: Constants.alertTitle,
+            message: Constants.alertMessage,
+            preferredStyle: .alert)
+        
+        let noAction = UIAlertAction(
+            title: "Нет",
+            style: .default
+        )
+        
+        let yesAction = UIAlertAction(
+            title: "Да",
+            style: .default
+        ) { [weak self] _ in
+            guard let self else { return }
+            logout()
+        }
+
+        alert.addAction(yesAction)
+        alert.addAction(noAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func logout() {
+        logoutService.logout()
+        
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })
+        else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        
+        let splashViewController = SplashViewController()
+        
+        window.rootViewController = splashViewController
     }
 
 }

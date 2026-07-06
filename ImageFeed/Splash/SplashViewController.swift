@@ -45,7 +45,7 @@ final class SplashViewController: UIViewController, ErrorHandler {
     
     // MARK: - Private methods
     private func setupView() {
-        splashImageView.image = UIImage(named: "Practicum")
+        splashImageView.image = UIImage(resource: .practicum)
         splashImageView.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(splashImageView)

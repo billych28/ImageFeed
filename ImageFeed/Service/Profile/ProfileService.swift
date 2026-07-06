@@ -70,6 +70,10 @@ final class ProfileService {
         task.resume()
     }
     
+    func clearProfile() {
+        profile = nil
+    }
+    
     // MARK: - Private methods
     private func makeProfileRequest(token: String) -> URLRequest? {
         let url = URL(string: GlobalConstants.baseApiURL + "me")

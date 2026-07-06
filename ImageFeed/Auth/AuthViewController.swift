@@ -8,7 +8,6 @@ import UIKit
 
 // MARK: - Constants
 private enum Constants {
-    static let backImageName = "Backward"
     static let ypBlackColor = "ypBlack"
 }
 
@@ -39,12 +38,9 @@ final class AuthViewController: UIViewController, ErrorHandler {
     
     // MARK: - Private methods
     private func configureBackButton() {
-        navigationController?.navigationBar.backIndicatorImage = UIImage(
-            named: Constants.backImageName
-        )
-        navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(
-            named: Constants.backImageName
-        )
+        let backIndicatorImage = UIImage(resource: .backward)
+        navigationController?.navigationBar.backIndicatorImage = backIndicatorImage
+        navigationController?.navigationBar.backIndicatorTransitionMaskImage = backIndicatorImage
         
         navigationItem.backBarButtonItem = UIBarButtonItem(
             title: "",
