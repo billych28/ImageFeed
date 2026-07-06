@@ -86,6 +86,10 @@ final class ProfileImageService {
         task.resume()
     }
     
+    func clearAvatar() {
+        avatarURL = nil
+    }
+    
     private func makeUserRequest(token: String, username: String) -> URLRequest? {
         let url = URL(string: "\(GlobalConstants.baseApiURL)/users/\(username)")
         guard let publicProfileUrl = url else {

@@ -33,6 +33,7 @@ final class ProfileViewController: UIViewController {
     private let descriptionLabel = UILabel()
 
     // MARK: - Private properties
+    private let logoutService = ProfileLogoutService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
 
     // MARK: - Lifecycle
@@ -160,9 +161,14 @@ final class ProfileViewController: UIViewController {
         let logoutButtonImage =
             UIImage(systemName: Constants.logoutButtonImageSystemName)
             ?? UIImage()
-
+        let logoutButtonAction = UIAction { [weak self] action in
+            guard let self else { return }
+            logout()
+        }
+        
         logoutButton.setImage(logoutButtonImage, for: .normal)
         logoutButton.tintColor = .ypRed
+        logoutButton.addAction(logoutButtonAction, for: .touchUpInside)
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(logoutButton)
@@ -229,6 +235,23 @@ final class ProfileViewController: UIViewController {
                 equalTo: loginLabel.bottomAnchor,
                 constant: Constants.margin8
             ).isActive = true
+    }
+    
+    private func logout() {
+        logoutService.logout()
+        
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })
+        else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        
+        let splashViewController = SplashViewController()
+        
+        window.rootViewController = splashViewController
     }
 
 }

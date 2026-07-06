@@ -19,6 +19,9 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var likeButton: UIButton!
     
+    // MARK: - Public properties
+    var delegate: ImagesListCellDelegate?
+    
     // MARK: - Private Properties
     private let gradientLayer: CAGradientLayer = {
         let gradient = CAGradientLayer()
@@ -32,6 +35,12 @@ final class ImagesListCell: UITableViewCell {
         gradient.endPoint = CGPoint(x: 1.0, y: 1.0)
             
         return gradient
+    }()
+    private lazy var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
     }()
     
     // MARK: - Lifecycle
@@ -48,6 +57,27 @@ final class ImagesListCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         cellImageView.kf.cancelDownloadTask()
+    }
+    
+    @IBAction func likeButtonClicked() {
+        delegate?.imageListCellDidTapLike(self)
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        let image = if isLiked {
+            UIImage(named: "Active Like")
+        } else {
+            UIImage(named: "Inactive Like")
+        }
+        likeButton.setImage(image, for: .normal)
+    }
+    
+    func setDateLabel(with date: Date?) {
+        if let date = date {
+            dateLabel.text = dateFormatter.string(from: date)
+        } else {
+            dateLabel.isHidden = true
+        }
     }
     
     // MARK: - Private Methods
