@@ -5,6 +5,20 @@
 //  Created by Мамытов Руслан on 16.06.2026.
 //
 
+enum MethodToLog {
+    enum ImageListService: String {
+        case fetchPhotosNextPage
+        case changeLike
+    }
+    
+    enum ProfileImageService: String {
+        case fetchProfileImageURL
+    }
+    
+    enum ProfileService: String {
+        case fetchProfile
+    }
+}
 
 final class Logger {
     // MARK: - Public properties

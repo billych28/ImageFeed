@@ -137,7 +137,11 @@ final class ImagesListViewController: UIViewController, ErrorHandler {
             case .success:
                 print("")
                 tableView.reloadRows(at: [indexPath], with: .automatic)
+<<<<<<< HEAD
             case .failure:
+=======
+            case .failure(let error):
+>>>>>>> 0f59715b6f615a9789636e021e3ebcd1523ee72f
                 Logger.shared.log(method: "configCell", error: "Image load error")
             }
         }
@@ -189,7 +193,13 @@ extension ImagesListViewController: UITableViewDelegate {
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
         
         if photos.isEmpty {
+<<<<<<< HEAD
             let image = UIImage(resource: .imageStub)
+=======
+            guard let image = UIImage(named: "Image stub") else {
+                return 0
+            }
+>>>>>>> 0f59715b6f615a9789636e021e3ebcd1523ee72f
             let imageWidth = image.size.width
             let scale = imageViewWidth / imageWidth
             let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
@@ -227,6 +237,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         imagesListService
             .changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
+<<<<<<< HEAD
                 guard let self else {
                     UIBlockingProgressHUD.dismiss()
                     return
@@ -234,11 +245,21 @@ extension ImagesListViewController: ImagesListCellDelegate {
             
                 UIBlockingProgressHUD.dismiss()
                 
+=======
+                guard let self else { return }
+            
+>>>>>>> 0f59715b6f615a9789636e021e3ebcd1523ee72f
                 switch result {
                 case .success:
                     self.photos = self.imagesListService.photos
                     cell.setIsLiked(self.photos[indexPath.row].isLiked)
+<<<<<<< HEAD
                 case .failure(let error):
+=======
+                    UIBlockingProgressHUD.dismiss()
+                case .failure(let error):
+                    UIBlockingProgressHUD.dismiss()
+>>>>>>> 0f59715b6f615a9789636e021e3ebcd1523ee72f
                     handleError(controller: self, error: error)
                 }
             }

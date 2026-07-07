@@ -26,4 +26,5 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         sceneConfiguration.delegateClass = SceneDelegate.self
         return sceneConfiguration
     }
+    
 }
