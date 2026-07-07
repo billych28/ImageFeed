@@ -233,11 +233,12 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 }
             
                 UIBlockingProgressHUD.dismiss()
-            
+                
                 switch result {
                 case .success:
                     self.photos = self.imagesListService.photos
                     cell.setIsLiked(self.photos[indexPath.row].isLiked)
+                    UIBlockingProgressHUD.dismiss()
                 case .failure(let error):
                     handleError(controller: self, error: error)
                 }
