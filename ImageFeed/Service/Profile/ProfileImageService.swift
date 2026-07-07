@@ -38,7 +38,11 @@ final class ProfileImageService {
     ) {
         assert(Thread.isMainThread)
         guard lastUsername != username else {
-            Logger.shared.log(method: "fetchProfileImageURL", error: "NetworkError.invalidRequest")
+            Logger.shared
+                .log(
+                    method: MethodToLog.ProfileImageService.fetchProfileImageURL.rawValue,
+                    error: "NetworkError.invalidRequest"
+                )
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -47,13 +51,21 @@ final class ProfileImageService {
         lastUsername = username
         
         guard let token = storage.token else {
-            Logger.shared.log(method: "fetchProfileImageURL", error: "Authorization token missing")
+            Logger.shared
+                .log(
+                    method: MethodToLog.ProfileImageService.fetchProfileImageURL.rawValue,
+                    error: "Authorization token missing"
+                )
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
         guard let urlRequest = makeUserRequest(token: token, username: username) else {
-            Logger.shared.log(method: "fetchProfileImageURL", error: "urlRequest is nil")
+            Logger.shared
+                .log(
+                    method: MethodToLog.ProfileImageService.fetchProfileImageURL.rawValue,
+                    error: "urlRequest is nil"
+                )
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -63,7 +75,11 @@ final class ProfileImageService {
             Error>
         ) in
             guard let self else {
-                Logger.shared.log(method: "fetchProfileImageURL", error: "NetworkError.urlSessionError")
+                Logger.shared
+                    .log(
+                        method: MethodToLog.ProfileImageService.fetchProfileImageURL.rawValue,
+                        error: "NetworkError.urlSessionError"
+                    )
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -74,7 +90,11 @@ final class ProfileImageService {
                 postImageURLNotification(url: user.profileImage.small)
                 completion(.success(user.profileImage.small))
             case .failure(let error):
-                Logger.shared.log(method: "fetchProfileImageURL", error: "\(String(describing: error.self))")
+                Logger.shared
+                    .log(
+                        method: MethodToLog.ProfileImageService.fetchProfileImageURL.rawValue,
+                        error: "\(String(describing: error.self))"
+                    )
                 completion(.failure(error))
             }
             
@@ -84,6 +104,10 @@ final class ProfileImageService {
         
         self.task = task
         task.resume()
+    }
+    
+    func clearAvatar() {
+        avatarURL = nil
     }
     
     private func makeUserRequest(token: String, username: String) -> URLRequest? {

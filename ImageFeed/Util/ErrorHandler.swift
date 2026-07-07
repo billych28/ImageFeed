@@ -39,6 +39,8 @@ extension ErrorHandler {
         }
         
         showErrorAlert(controller: vc, message: alertMessage)
+
+        print(error.localizedDescription)
     }
     
     private func showErrorAlert(

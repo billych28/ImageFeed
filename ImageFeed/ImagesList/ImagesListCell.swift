@@ -5,6 +5,7 @@
 //  Created by Мамытов Руслан on 03.04.2026.
 //
 import UIKit
+import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
     // MARK: - Constants
@@ -17,6 +18,9 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var cellImageView: UIImageView!
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var likeButton: UIButton!
+    
+    // MARK: - Public properties
+    var delegate: ImagesListCellDelegate?
     
     // MARK: - Private Properties
     private let gradientLayer: CAGradientLayer = {
@@ -32,6 +36,12 @@ final class ImagesListCell: UITableViewCell {
             
         return gradient
     }()
+    private lazy var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
     
     // MARK: - Lifecycle
     override func awakeFromNib() {
@@ -42,6 +52,28 @@ final class ImagesListCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         updateGradientFrame()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+    }
+    
+    @IBAction private func likeButtonClicked() {
+        delegate?.imageListCellDidTapLike(self)
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        let image = UIImage(resource: isLiked ? .activeLike : .inactiveLike)
+        likeButton.setImage(image, for: .normal)
+    }
+    
+    func setDateLabel(with date: Date?) {
+        if let date {
+            dateLabel.text = dateFormatter.string(from: date)
+        } else {
+            dateLabel.isHidden = true
+        }
     }
     
     // MARK: - Private Methods

@@ -15,13 +15,15 @@ final class SplashViewController: UIViewController, ErrorHandler {
     private let profileService = ProfileService.shared
     private let profileImageService = ProfileImageService.shared
     private let storage = OAuth2Storage.shared
+
+    // MARK: - Public properties
+    weak var delegate: AuthViewControllerDelegate?
     
     // MARK: - Lifecycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupView()
         checkStorageTokenAndNavigate()
-        //KeychainWrapper.standard.removeObject(forKey: "token")
     }
     
     // MARK: - Public methods
@@ -43,7 +45,7 @@ final class SplashViewController: UIViewController, ErrorHandler {
     
     // MARK: - Private methods
     private func setupView() {
-        splashImageView.image = UIImage(named: "Practicum")
+        splashImageView.image = UIImage(resource: .practicum)
         splashImageView.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(splashImageView)
@@ -88,6 +90,7 @@ final class SplashViewController: UIViewController, ErrorHandler {
         }
         authViewController.delegate = self
         authViewController.modalPresentationStyle = .fullScreen
+
         present(authViewController, animated: true)
     }
 }
