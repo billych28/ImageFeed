@@ -14,13 +14,6 @@ enum ImagesListServiceConstants {
     static let didChangeNotification = Notification.Name("ImagesListProviderDidChange")
 }
 
-private enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
-}
-
 final class ImagesListService {
     static let shared = ImagesListService()
     private(set) var photos: [Photo] = []
@@ -43,13 +36,13 @@ final class ImagesListService {
         let page = (lastLoadedPage ?? 0) + 1
         
         guard let token = storage.token else {
-            Logger.shared.log(method: "fetchPhotosNextPage", error: "Authorization token missing")
+            Logger.shared.log(method: MethodToLog.ImageListService.fetchPhotosNextPage.rawValue, error: "Authorization token missing")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
         guard let request = makePhotosListRequest(token: token, page: page) else {
-            Logger.shared.log(method: "fetchPhotosNextPage", error: "urlRequest is nil")
+            Logger.shared.log(method: MethodToLog.ImageListService.fetchPhotosNextPage.rawValue, error: "urlRequest is nil")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -74,7 +67,7 @@ final class ImagesListService {
                 self.lastLoadedPage = page
                 completion(.success(photos))
             case .failure(let error):
-                Logger.shared.log(method: "fetchPhotosNextPage", error: "\(String(describing: error.self))")
+                Logger.shared.log(method: MethodToLog.ImageListService.fetchPhotosNextPage.rawValue, error: "\(String(describing: error.self))")
                 completion(.failure(error))
             }
             
@@ -92,13 +85,13 @@ final class ImagesListService {
         changeLikeTask?.cancel()
         
         guard let token = storage.token else {
-            Logger.shared.log(method: "changeLike", error: "Authorization token missing")
+            Logger.shared.log(method: MethodToLog.ImageListService.changeLike.rawValue, error: "Authorization token missing")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
         guard let request = makeChangeLikeRequest(photoId: photoId, isLike: isLike, token: token) else {
-            Logger.shared.log(method: "changeLike", error: "urlRequest is nil")
+            Logger.shared.log(method: MethodToLog.ImageListService.changeLike.rawValue, error: "urlRequest is nil")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -108,7 +101,7 @@ final class ImagesListService {
             Error>
         ) in
             guard let self else {
-                Logger.shared.log(method: "changeLike", error: "NetworkError.urlSessionError")
+                Logger.shared.log(method: MethodToLog.ImageListService.changeLike.rawValue, error: "NetworkError.urlSessionError")
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -136,7 +129,7 @@ final class ImagesListService {
                     }
                 }
             case .failure(let error):
-                Logger.shared.log(method: "changeLike", error: "\(String(describing: error.self))")
+                Logger.shared.log(method: MethodToLog.ImageListService.changeLike.rawValue, error: "\(String(describing: error.self))")
                 completion(.failure(error))
             }
             

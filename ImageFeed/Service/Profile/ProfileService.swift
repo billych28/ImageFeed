@@ -27,7 +27,11 @@ final class ProfileService {
         completion: @escaping (Result<Profile, Error>) -> Void
     ) {
         guard lastToken != token else {
-            Logger.shared.log(method: "fetchProfile", error: "NetworkError.invalidRequest")
+            Logger.shared
+                .log(
+                    method: MethodToLog.ProfileService.fetchProfile.rawValue,
+                    error: "NetworkError.invalidRequest"
+                )
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -36,7 +40,11 @@ final class ProfileService {
         lastToken = token
         
         guard let urlRequest = makeProfileRequest(token: token) else {
-            Logger.shared.log(method: "fetchProfile", error: "urlRequest is nil")
+            Logger.shared
+                .log(
+                    method: MethodToLog.ProfileService.fetchProfile.rawValue,
+                    error: "urlRequest is nil"
+                )
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -47,7 +55,11 @@ final class ProfileService {
         ) in
             
             guard let self else {
-                Logger.shared.log(method: "fetchProfile", error: "NetworkError.urlSessionError")
+                Logger.shared
+                    .log(
+                        method: MethodToLog.ProfileService.fetchProfile.rawValue,
+                        error: "NetworkError.urlSessionError"
+                    )
                 completion(.failure(NetworkError.urlSessionError))
                 return
             }
@@ -58,7 +70,11 @@ final class ProfileService {
                 self.profile = profile
                 completion(.success(profile))
             case .failure(let error):
-                Logger.shared.log(method: "fetchProfile", error: "\(String(describing: error.self))")
+                Logger.shared
+                    .log(
+                        method: MethodToLog.ProfileService.fetchProfile.rawValue,
+                        error: "\(String(describing: error.self))"
+                    )
                 completion(.failure(error))
             }
             

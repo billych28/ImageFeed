@@ -233,7 +233,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 }
             
                 UIBlockingProgressHUD.dismiss()
-                
+            
                 switch result {
                 case .success:
                     self.photos = self.imagesListService.photos

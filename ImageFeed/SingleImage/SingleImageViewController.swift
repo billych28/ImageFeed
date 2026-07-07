@@ -56,7 +56,7 @@ final class SingleImageViewController: UIViewController, ErrorHandler {
             let fullImageURL,
             let url = URL(string: fullImageURL)
         else { return }
-        
+
         UIBlockingProgressHUD.show()
         imageView.kf.setImage(with: url) { [weak self] result in
             UIBlockingProgressHUD.dismiss()

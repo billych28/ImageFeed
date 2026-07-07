@@ -243,7 +243,8 @@ final class ProfileViewController: UIViewController {
         let alert = UIAlertController(
             title: Constants.alertTitle,
             message: Constants.alertMessage,
-            preferredStyle: .alert)
+            preferredStyle: .alert
+        )
         
         let noAction = UIAlertAction(
             title: "Нет",
