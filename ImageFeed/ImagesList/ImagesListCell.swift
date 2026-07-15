@@ -47,6 +47,7 @@ final class ImagesListCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         cellImageView.layer.addSublayer(gradientLayer)
+        likeButton.accessibilityIdentifier = AccessibilityIdentifiers.likeButtonIdentifier
     }
     
     override func layoutSubviews() {

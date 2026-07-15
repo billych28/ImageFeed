@@ -8,19 +8,29 @@
 import UIKit
 import Kingfisher
 
-final class ImagesListViewController: UIViewController, ErrorHandler {
+protocol ImagesListViewControllerProtocol: AnyObject {
+    var presenter: ImagesListPresenterProtocol? { get set }
+    
+    func updateTableViewAnimated()
+    func onFetchFailed(with error: Error)
+    func showProgress(isShowing: Bool)
+}
+
+final class ImagesListViewController: UIViewController, ErrorHandler, ImagesListViewControllerProtocol {
     
     // MARK: - Constants
     private enum Constants {
         static let inset: CGFloat = 12
         static let defaultCellHeight: CGFloat = 200
+        static let showSingleImageSegueIdentifier = "ShowSingleImage"
     }
 
     // MARK: - IBOutlets
     @IBOutlet private weak var tableView: UITableView!
     
+    var presenter: ImagesListPresenterProtocol?
+    
     // MARK: - Private properties
-    private let imagesListService = ImagesListService.shared
     private let currentDate = Date()
     private var photos: [Photo] = []
     private var imagesListServiceObserver: NSObjectProtocol?
@@ -32,14 +42,14 @@ final class ImagesListViewController: UIViewController, ErrorHandler {
         super.viewDidLoad()
         setupTableView()
         setupImagesListObserver()
-        fetchNextPage()
+        presenter?.fetchNextPage()
         tableView.isPrefetchingEnabled = false
     }
     
     // MARK: - Public methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-        case GlobalConstants.showSingleImageSegueIdentifier:
+        case Constants.showSingleImageSegueIdentifier:
             handleSingleImageViewSegue(segue: segue, sender: sender)
         default:
             super.prepare(for: segue, sender: sender)
@@ -68,28 +78,13 @@ final class ImagesListViewController: UIViewController, ErrorHandler {
             }
     }
     
-    private func fetchNextPage() {
-        guard !isLoading else { return }
-        isLoading = true
+    func updateTableViewAnimated() {
+        guard let presenter else { return }
+        let loadedPhotos = presenter.getPhotos()
         
-        imagesListService.fetchPhotosNextPage { [weak self] result in
-            guard let self else { return }
-        
-            isLoading = false
-            
-            switch result {
-            case .success:
-                updateTableViewAnimated()
-            case .failure(let error):
-                handleError(controller: self, error: error)
-            }
-        }
-    }
-    
-    private func updateTableViewAnimated() {
         let oldCount = photos.count
-        let newCount = imagesListService.photos.count
-        photos = imagesListService.photos
+        let newCount = loadedPhotos.count
+        photos = loadedPhotos
         if oldCount != newCount {
             tableView.performBatchUpdates {
                 let indexPaths = (oldCount..<newCount).map { i in
@@ -97,6 +92,18 @@ final class ImagesListViewController: UIViewController, ErrorHandler {
                 }
                 tableView.insertRows(at: indexPaths, with: .automatic)
             } completion: { _ in }
+        }
+    }
+    
+    func onFetchFailed(with error: Error) {
+        handleError(controller: self, error: error)
+    }
+    
+    func showProgress(isShowing: Bool) {
+        if isShowing {
+            UIBlockingProgressHUD.show()
+        } else {
+            UIBlockingProgressHUD.dismiss()
         }
     }
     
@@ -179,7 +186,7 @@ extension ImagesListViewController: UITableViewDelegate {
         didSelectRowAt indexPath: IndexPath
     ) {
         performSegue(
-            withIdentifier: GlobalConstants.showSingleImageSegueIdentifier,
+            withIdentifier: Constants.showSingleImageSegueIdentifier,
             sender: indexPath
         )
     }
@@ -209,7 +216,7 @@ extension ImagesListViewController: UITableViewDelegate {
         forRowAt indexPath: IndexPath
     ) {
         if indexPath.row + 1 == photos.count {
-            fetchNextPage()
+            presenter?.fetchNextPage()
         }
     }
     
@@ -225,23 +232,14 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         UIBlockingProgressHUD.show()
         
-        imagesListService
-            .changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
-                guard let self else {
-                    UIBlockingProgressHUD.dismiss()
-                    return
-                }
+        presenter?.changeLike(id: photo.id, isLiked: photo.isLiked) { [weak self] in
+            guard
+                let self,
+                let presenter
+            else { return }
             
-                UIBlockingProgressHUD.dismiss()
-                
-                switch result {
-                case .success:
-                    self.photos = self.imagesListService.photos
-                    cell.setIsLiked(self.photos[indexPath.row].isLiked)
-                    UIBlockingProgressHUD.dismiss()
-                case .failure(let error):
-                    handleError(controller: self, error: error)
-                }
-            }
+            self.photos = presenter.getPhotos()
+            cell.setIsLiked(self.photos[indexPath.row].isLiked)
+        }
     }
 }

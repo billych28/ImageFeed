@@ -8,7 +8,7 @@ import UIKit
 
 // MARK: - Constants
 private enum Constants {
-    static let ypBlackColor = "ypBlack"
+    static let showWebViewSegueIdentifier = "ShowWebView"
 }
 
 final class AuthViewController: UIViewController, ErrorHandler {
@@ -26,10 +26,14 @@ final class AuthViewController: UIViewController, ErrorHandler {
     // MARK: - Public methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         switch segue.identifier {
-        case GlobalConstants.showWebViewSegueIdentifier:
+        case Constants.showWebViewSegueIdentifier:
             guard let viewController = segue.destination as? WebViewController else {
                 return
             }
+            let authHelper = AuthHelper()
+            let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+            viewController.presenter = webViewPresenter
+            webViewPresenter.view = viewController
             viewController.delegate = self
         default:
             super.prepare(for: segue, sender: sender)
@@ -48,8 +52,6 @@ final class AuthViewController: UIViewController, ErrorHandler {
             target: nil,
             action: nil
         )
-        navigationItem.backBarButtonItem?.tintColor = UIColor(
-            named: Constants.ypBlackColor
-        )
+        navigationItem.backBarButtonItem?.tintColor = UIColor(resource: .ypBlack)
     }
 }

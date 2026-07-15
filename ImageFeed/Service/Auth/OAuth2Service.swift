@@ -14,6 +14,7 @@ final class OAuth2Service {
     static let shared = OAuth2Service()
     
     // MARK: - Private properties
+    private let authConfiguration = AuthConfiguration.standard
     private let decoder = JSONDecoder()
     private var lastCode: String?
     private var task: URLSessionTask?
@@ -97,14 +98,14 @@ final class OAuth2Service {
         }
         
         urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: GlobalConstants.accessKey),
+            URLQueryItem(name: "client_id", value: authConfiguration.accessKey),
             URLQueryItem(
                 name: "client_secret",
-                value: GlobalConstants.secretKey
+                value: authConfiguration.secretKey
             ),
             URLQueryItem(
                 name: "redirect_uri",
-                value: GlobalConstants.redirectURI
+                value: authConfiguration.redirectURI
             ),
             URLQueryItem(name: "code", value: code),
             URLQueryItem(name: "grant_type", value: "authorization_code"),
