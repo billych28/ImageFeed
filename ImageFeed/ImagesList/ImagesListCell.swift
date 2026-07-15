@@ -12,6 +12,7 @@ final class ImagesListCell: UITableViewCell {
     enum Constants {
         static let reuseIdentifier = "ImagesListCell"
         static let gradientOffset: CGFloat = 16
+        static let likeButtonIdentifier = "LikeButton"
     }
     
     // MARK: - IBOutlets
@@ -47,6 +48,7 @@ final class ImagesListCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         cellImageView.layer.addSublayer(gradientLayer)
+        likeButton.accessibilityIdentifier = Constants.likeButtonIdentifier
     }
     
     override func layoutSubviews() {

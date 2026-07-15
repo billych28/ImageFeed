@@ -18,6 +18,7 @@ final class ImagesListService {
     static let shared = ImagesListService()
     private(set) var photos: [Photo] = []
     
+    private let authHelper = AuthConfiguration.standard
     private let decoder = JSONDecoder()
     private let storage = OAuth2Storage.shared
     private var lastLoadedPage: Int?

@@ -15,6 +15,7 @@ private enum Constants {
     static let margin8: CGFloat = 8
     static let imageViewSize: CGFloat = 70
     static let logoutButtonTrailingMargin: CGFloat = -20
+    static let logoutButtonIdentifier = "LogoutButton"
     static let fontSize23: CGFloat = 23
     static let fontSize13: CGFloat = 13
     static let placeholderImageName = "person.circle.fill"
@@ -24,29 +25,39 @@ private enum Constants {
     static let descriptionLabelDefaultText = "Описание отсутствует"
     static let alertTitle = "Пока, пока!"
     static let alertMessage = "Уверены, что хотите выйти?"
+    static let logoutAlertIdentifier = "LogoutAlert"
+    static let logoutAlertYesButtonIdentifier = "YesButton"
 }
 
-final class ProfileViewController: UIViewController {
+protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    
+    func updateProfile(with profile: Profile)
+}
+
+final class ProfileViewController: UIViewController & ProfileViewControllerProtocol {
     // MARK: - IBOutlets
     private let avatarImageView = UIImageView()
     private let logoutButton = UIButton(type: .system)
     private let usernameLabel = UILabel()
     private let loginLabel = UILabel()
     private let descriptionLabel = UILabel()
-
+    
+    // MARK: - Public properties
+    var presenter: ProfilePresenterProtocol?
+    
     // MARK: - Private properties
-    private let logoutService = ProfileLogoutService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
-
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
-        updateProfile()
+        presenter?.getProfile()
         setupImageServiceObserver()
         updateAvatar()
     }
-
+    
     // MARK: - Private methods
     private func setupViews() {
         view.backgroundColor = UIColor(named: Constants.backgroundColor)
@@ -57,12 +68,18 @@ final class ProfileViewController: UIViewController {
         configureDescriptionLabel()
     }
     
-    private func updateProfile() {
-        if let profile = ProfileService.shared.profile {
-            updateProfileDetails(profile: profile)
-        }
+    func updateProfile(with profile: Profile) {
+        usernameLabel.text =
+        profile.name.isEmpty
+        ? Constants.usernameLabelDefaultText : profile.name
+        loginLabel.text =
+        profile.loginName.isEmpty
+        ? Constants.loginLabelDefaultText : profile.loginName
+        descriptionLabel.text =
+        (profile.bio?.isEmpty ?? true)
+        ? Constants.descriptionLabelDefaultText : profile.bio
     }
-
+    
     private func setupImageServiceObserver() {
         profileImageServiceObserver = NotificationCenter.default
             .addObserver(
@@ -74,19 +91,18 @@ final class ProfileViewController: UIViewController {
                 self.updateAvatar()
             }
     }
-
+    
     private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-
+        guard let url = presenter?.getProfileAvatarURL() else {
+            return
+        }
+        
         let placeholderImage = UIImage(
             systemName: Constants.placeholderImageName
         )
-
+        
         let processor = RoundCornerImageProcessor(cornerRadius: Constants.imageViewSize / 2)
-
+        
         avatarImageView.kf.indicatorType = .activity
         avatarImageView.kf.setImage(
             with: url,
@@ -98,7 +114,7 @@ final class ProfileViewController: UIViewController {
                 .forceRefresh,
             ]
         ) { result in
-
+            
             switch result {
             case .success(let value):
                 print("Картинка: \(value.image)")
@@ -109,19 +125,7 @@ final class ProfileViewController: UIViewController {
             }
         }
     }
-
-    private func updateProfileDetails(profile: Profile) {
-        usernameLabel.text =
-            profile.name.isEmpty
-            ? Constants.usernameLabelDefaultText : profile.name
-        loginLabel.text =
-            profile.loginName.isEmpty
-            ? Constants.loginLabelDefaultText : profile.loginName
-        descriptionLabel.text =
-            (profile.bio?.isEmpty ?? true)
-            ? Constants.descriptionLabelDefaultText : profile.bio
-    }
-
+    
     private func configureImageView() {
         let profileImage = UIImage(systemName: Constants.placeholderImageName)?
             .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
@@ -136,9 +140,9 @@ final class ProfileViewController: UIViewController {
         avatarImageView.contentMode = .scaleAspectFit
         avatarImageView.clipsToBounds = true
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(avatarImageView)
-
+        
         avatarImageView.leadingAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
@@ -158,11 +162,11 @@ final class ProfileViewController: UIViewController {
                 equalToConstant: Constants.imageViewSize
             ).isActive = true
     }
-
+    
     private func configureLogoutButton() {
         let logoutButtonImage =
-            UIImage(systemName: Constants.logoutButtonImageSystemName)
-            ?? UIImage()
+        UIImage(systemName: Constants.logoutButtonImageSystemName)
+        ?? UIImage()
         let logoutButtonAction = UIAction { [weak self] action in
             guard let self else { return }
             showLogoutAlert()
@@ -172,9 +176,10 @@ final class ProfileViewController: UIViewController {
         logoutButton.tintColor = .ypRed
         logoutButton.addAction(logoutButtonAction, for: .touchUpInside)
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
-
+        logoutButton.accessibilityIdentifier = Constants.logoutButtonIdentifier
+        
         view.addSubview(logoutButton)
-
+        
         logoutButton.trailingAnchor
             .constraint(
                 equalTo: view.safeAreaLayoutGuide.trailingAnchor,
@@ -183,14 +188,14 @@ final class ProfileViewController: UIViewController {
         logoutButton.centerYAnchor
             .constraint(equalTo: avatarImageView.centerYAnchor).isActive = true
     }
-
+    
     private func configureUsernameLabel() {
         usernameLabel.font = UIFont.systemFont(ofSize: Constants.fontSize23, weight: .bold)
         usernameLabel.textColor = .ypWhite
         usernameLabel.text = Constants.usernameLabelDefaultText
-
+        
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(usernameLabel)
         usernameLabel.leadingAnchor
             .constraint(
@@ -202,14 +207,14 @@ final class ProfileViewController: UIViewController {
                 constant: Constants.margin8
             ).isActive = true
     }
-
+    
     private func configureLoginLabel() {
         loginLabel.font = UIFont.systemFont(ofSize: Constants.fontSize13)
         loginLabel.textColor = .ypGray
         loginLabel.text = Constants.loginLabelDefaultText
-
+        
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(loginLabel)
         loginLabel.leadingAnchor
             .constraint(equalTo: avatarImageView.leadingAnchor).isActive = true
@@ -219,17 +224,17 @@ final class ProfileViewController: UIViewController {
                 constant: Constants.margin8
             ).isActive = true
     }
-
+    
     private func configureDescriptionLabel() {
         let descriptionLabel = UILabel()
         descriptionLabel.font = UIFont.systemFont(ofSize: Constants.fontSize13)
         descriptionLabel.textColor = .ypWhite
         descriptionLabel.text = Constants.descriptionLabelDefaultText
-
+        
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(descriptionLabel)
-
+        
         descriptionLabel.leadingAnchor
             .constraint(equalTo: avatarImageView.leadingAnchor).isActive = true
         descriptionLabel.topAnchor
@@ -245,6 +250,7 @@ final class ProfileViewController: UIViewController {
             message: Constants.alertMessage,
             preferredStyle: .alert
         )
+        alert.view.accessibilityIdentifier = Constants.logoutAlertIdentifier
         
         let noAction = UIAlertAction(
             title: "Нет",
@@ -256,17 +262,18 @@ final class ProfileViewController: UIViewController {
             style: .default
         ) { [weak self] _ in
             guard let self else { return }
-            logout()
+            logoutAndNavigateToSplashViewController()
         }
-
+        yesAction.accessibilityIdentifier = Constants.logoutAlertYesButtonIdentifier
+        
         alert.addAction(yesAction)
         alert.addAction(noAction)
         
         present(alert, animated: true, completion: nil)
     }
     
-    private func logout() {
-        logoutService.logout()
+    func logoutAndNavigateToSplashViewController() {
+        presenter?.logout()
         
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -281,5 +288,5 @@ final class ProfileViewController: UIViewController {
         
         window.rootViewController = splashViewController
     }
-
+    
 }
