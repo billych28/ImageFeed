@@ -247,6 +247,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
             message: Constants.alertMessage,
             preferredStyle: .alert
         )
+
         alert.view.accessibilityIdentifier = AccessibilityIdentifiers.logoutAlertIdentifier
         
         let noAction = UIAlertAction(
@@ -261,6 +262,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
             guard let self else { return }
             logoutAndNavigateToSplashViewController()
         }
+        
         yesAction.accessibilityIdentifier = AccessibilityIdentifiers.logoutAlertYesButtonIdentifier
         
         alert.addAction(yesAction)

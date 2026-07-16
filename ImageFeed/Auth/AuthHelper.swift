@@ -29,7 +29,7 @@ final class AuthHelper: AuthHelperProtocol {
             return nil
         }
     } 
-
+    
     private func authURL() -> URL? {
         guard var urlComponents = URLComponents(string: configuration.authURLString) else {
             return nil

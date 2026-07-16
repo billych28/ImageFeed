@@ -35,6 +35,7 @@ final class ImageFeedUITests: XCTestCase {
         
         passwordTextField.tap()
         passwordTextField.typeText("Пароль")
+
         sleep(2)
         app.buttons["Done"].firstMatch.tap()
         
@@ -69,9 +70,7 @@ final class ImageFeedUITests: XCTestCase {
         sleep(4)
         
         let image = app.scrollViews.images.element(boundBy: 0)
-        // Zoom in
-        image.pinch(withScale: 3, velocity: 1) // zoom in
-        // Zoom out
+        image.pinch(withScale: 3, velocity: 1)
         image.pinch(withScale: 0.5, velocity: -1)
         
         // then
@@ -86,7 +85,7 @@ final class ImageFeedUITests: XCTestCase {
         
         XCTAssertTrue(app.staticTexts["Имя"].exists)
         XCTAssertTrue(app.staticTexts["@логин"].exists)
-        
+
         // when
         app.buttons["LogoutButton"].tap()
         

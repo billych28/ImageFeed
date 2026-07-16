@@ -72,6 +72,7 @@ final class WebViewController: UIViewController & WebViewControllerProtocol {
         webView.navigationDelegate = self
         webView.accessibilityIdentifier = AccessibilityIdentifiers.webViewAccessibilityIdentifier
     }
+    
     private func setEstimatedProgressObserver() {
         estimatedProgressObservation = webView.observe(
             \.estimatedProgress,
