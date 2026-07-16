@@ -27,15 +27,20 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:ImageFeed.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
-            parallelizable = "YES">
+            parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "28B0001A2F7BA52C00CB52CF"
+               BlueprintIdentifier = "285251BF3006216D0093075B"
                BuildableName = "ImageFeedTests.xctest"
                BlueprintName = "ImageFeedTests"
                ReferencedContainer = "container:ImageFeed.xcodeproj">
@@ -46,7 +51,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "28B000242F7BA52C00CB52CF"
+               BlueprintIdentifier = "285251EC300644330093075B"
                BuildableName = "ImageFeedUITests.xctest"
                BlueprintName = "ImageFeedUITests"
                ReferencedContainer = "container:ImageFeed.xcodeproj">
